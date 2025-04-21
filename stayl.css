@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Mono:wght@200..900&display=swap');
+@import url('https://unpkg.com/normalize.css') layer(normalize);
+
+@layer normalize, base, demo, snapping;
+
+@layer snapping {
+  @supports (animation-timeline: scroll()) {
+    .scroller header,
+    .scroller footer {
+      scroll-snap-align: unset;
+    }
+    .scroller header {
+      --align: start;
+      animation: snap both linear reverse;
+      animation-timeline: scroll(nearest);
+      animation-range: calc(var(--padding, 0) * 1px) 0;
+    }
+    .scroller footer {
+      --align: end;
+      animation: snap both linear;
+      animation-timeline: scroll(nearest);
+      animation-range: calc(100% - (var(--padding, 0) * 1px)) 100%;
+    }
+    @keyframes snap {
+      to {
+        scroll-snap-align: var(--align, start);
+      }
+    }
+  }
+}
+
+@layer demo {
+  :root {
+    --size: 300px;
+    --radius: 32;
+    --padding: 64px;
+    --bg: hsl(180 0% 33%);
+    --bar: hsl(0 0% 100% / 0.5);
+    --panel: hsl(20 60% 50%);
+    timeline-scope: --scroller;
+  }
+  /**
+   * Think the idea here would be to translate a fake scrollbar up/down
+   * Clip the edges and rotate a clipped bordered element on the ends
+   * If we need the fatness, we need to go with something like a morphing SVG
+   * Or we might get away with transform-origin 100% 0 and scale 1.1 to get the thicc
+   * Might be easier to drop two SVG at each end though for that.
+   * */
+  .scroller {
+    position: relative;
+    width: clamp(300px, 50vmin, 600px);
+    aspect-ratio: 3 / 4;
+    resize: both;
+    overflow: hidden;
+    /* padding: 0 0.5rem 0 0; */
+    padding: 1rem;
+  }
+
+  .scroller img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    filter: contrast(1.5) grayscale(1);
+  }
+
+  .bar__thumb,
+  .bar__track {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  [data-rounded-scroll='true'] .scroller :is(.bar__thumb, .bar__track) {
+    opacity: 1;
+  }
+
+  .scroller > svg {
+    position: absolute;
+    top: 1rem;
+    bottom: 1rem;
+    right: 1rem;
+    pointer-events: none;
+    /* height: 100%; */
+    width: calc(var(--radius) * 2px);
+    overflow: visible !important;
+    z-index: 2;
+  }
+
+  [data-rounded-scroll='true'] .scroller div::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-rounded-scroll='true'] div::-webkit-scrollbar {
+    display: none;
+    opacity: 0 !important;
+  }
+
+  [data-rounded-scroll='true'] .scroller div {
+    scrollbar-width: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scroller path {
+    stroke-width: calc(var(--stroke-width) * 1px);
+  }
+
+  .bar__thumb {
+    stroke: color-mix(
+      in hsl,
+      var(--color, #fff),
+      #0000 calc((1 - var(--bar-alpha, 0.5)) * 100%)
+    );
+    stroke-dasharray: var(--thumb-size) var(--track-length);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .bar__thumb {
+      animation: scroll both linear;
+      animation-timeline: --scroller;
+    }
+  }
+
+  /* Keyframes are generated via JavaScript for dynamic stuff */
+
+  .bar__track {
+    stroke: hsl(0 0% 100% / var(--track-alpha, 0));
+  }
+
+  .scroller > div {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    background: light-dark(#fff, #000);
+    border-radius: calc(var(--radius) * 1px);
+    display: grid;
+    grid-auto-flow: row;
+    gap: 0;
+    margin: 0;
+    padding: calc(var(--padding) * 1px) 0;
+    list-style-type: none;
+    scroll-snap-type: y mandatory;
+    scroll-timeline: --scroller;
+    scroll-behavior: smooth;
+    outline: 1px solid color-mix(in lch, canvas, canvasText);
+    outline-offset: 1px;
+
+    &::after {
+      content: '';
+      height: calc(var(--stroke, 4) * 1px);
+      width: clamp(40px, 50%, 80px);
+      background: canvasText;
+      border-radius: 100px;
+      position: absolute;
+      bottom: calc(1rem + 4px);
+      left: 50%;
+      translate: -50% -50%;
+    }
+  }
+
+  .scroller > div > * {
+    padding-inline: 1.25rem;
+  }
+  .scroller main :not(:last-child) {
+    margin-bottom: 2rem;
+  }
+
+  .scroller main p:last-of-type {
+    opacity: 0.4;
+  }
+
+  .scroller p {
+    opacity: 0.6;
+    font-size: 0.875rem;
+  }
+
+  .scroller header {
+    scroll-snap-align: start;
+    margin-block: 2rem;
+    text-transform: uppercase;
+    font-family: 'Reddit Mono', monospace;
+
+    div {
+      margin-block: 4rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 300;
+      margin: 0;
+    }
+    p {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 300;
+    }
+  }
+
+  .scroller footer {
+    scroll-snap-align: end;
+    padding-inline: 1rem;
+    text-align: center;
+    padding-block: 1rem;
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+}
+
+@layer base {
+  :root {
+    --font-size-min: 16;
+    --font-size-max: 20;
+    --font-ratio-min: 1.2;
+    --font-ratio-max: 1.33;
+    --font-width-min: 375;
+    --font-width-max: 1500;
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  [data-theme='light'] {
+    color-scheme: light only;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark only;
+  }
+
+  :where(.fluid) {
+    --fluid-min: calc(
+      var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0))
+    );
+    --fluid-max: calc(
+      var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0))
+    );
+    --fluid-preferred: calc(
+      (var(--fluid-max) - var(--fluid-min)) /
+        (var(--font-width-max) - var(--font-width-min))
+    );
+    --fluid-type: clamp(
+      (var(--fluid-min) / 16) * 1rem,
+      ((var(--fluid-min) / 16) * 1rem) -
+        (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) +
+        (var(--fluid-preferred) * var(--variable-unit, 100vi)),
+      (var(--fluid-max) / 16) * 1rem
+    );
+    font-size: var(--fluid-type);
+  }
+
+  *,
+  *:after,
+  *:before {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: light-dark(#fff, #000);
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    font-family: 'SF Pro Text', 'SF Pro Icons', 'AOS Icons', 'Helvetica Neue',
+      Helvetica, Arial, sans-serif, system-ui;
+  }
+
+  body::before {
+    --size: 45px;
+    --line: color-mix(in hsl, canvasText, transparent 70%);
+    content: '';
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    background: linear-gradient(
+          90deg,
+          var(--line) 1px,
+          transparent 1px var(--size)
+        )
+        50% 50% / var(--size) var(--size),
+      linear-gradient(var(--line) 1px, transparent 1px var(--size)) 50% 50% /
+        var(--size) var(--size);
+    mask: linear-gradient(-20deg, transparent 50%, white);
+    top: 0;
+    transform-style: flat;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .bear-link {
+    color: canvasText;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: 48px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    opacity: 0.8;
+  }
+
+  :where(.x-link, .bear-link):is(:hover, :focus-visible) {
+    opacity: 1;
+  }
+
+  .bear-link svg {
+    width: 75%;
+  }
+
+  /* Utilities */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+div.tp-dfwv {
+  width: 280px;
+  * {
+    text-transform: lowercase;
+  }
+}
